@@ -1,8 +1,7 @@
 # RAG Knowledge Pipeline
 
 Multi-source RAG pipeline with adaptive query routing, 3-layer document retrieval, and LLM-as-Judge scoring.
-
-Built with LangChain + LangGraph. Designed around [Adaptive RAG](https://arxiv.org/pdf/2403.14403.pdf), [CRAG](https://arxiv.org/pdf/2401.15884.pdf), and [Self-RAG](https://arxiv.org/pdf/2310.11511.pdf).
+Built with LangChain + LangGraph. Designed around Adaptive RAG, CRAG.
 
 ---
 
