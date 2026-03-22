@@ -251,26 +251,27 @@ def build_pipeline(retrievers: dict):
         return "not supported"
 
     '''
+    retrievel流程
     retrieve
-       ↓
+        v
     retrieval_grade
-       ↓
-    route_retrieval ───────→ web_search_fallback
-       ↓
+        v
+    route_retrieval -> web_search_fallback
+        v
     rag_generate
-       ↓
+        v
     grade_rag_generation
-       ↓
-       ├── useful → 結束 
-       ├── not useful → # 答案沒回應問題 → 補做 web search 再重新生成
-       └── hallucination → 重跑
+        v
+       |-useful -> 結束 
+       |- not useful -> 答案沒回應問題 -> web search 再重新生成
+       |- hallucination -> 重跑
     '''
 
     # ============================================================
     # Build Graph
     # ============================================================
 
-    # 建立 State Machine（整個 pipeline 傳來傳去的資料，每個 node 都會「讀 state + 改 state」）
+    # 建立 State Machine（整個 pipeline 傳來傳去的資料，每個 node 都會 *讀state / 改 state* ）
     workflow = StateGraph(GraphState)
 
     # 把 function 建立成 node，放進 graph
@@ -313,13 +314,13 @@ def build_pipeline(retrievers: dict):
 
     '''
             [retrieve]
-                 ↓
+                 v
         [retrieval_grade]
-             ↓       ↓
+          v          v
        有文件       沒文件
-         ↓            ↓
+         v            v
     [rag_generate]  [fallback]
-         ↓            ↓
+         v            v
          └────→ [retrieval_grade]
                ↓
        [grade_rag_generation]
