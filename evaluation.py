@@ -5,7 +5,6 @@
 # [Eval] evaluate_pipeline()
 # ============================================================
 '''
-# 用途：量化「改前 vs 改後」的效果。
 # 欄位說明：
 #   question          → 測試問題
 #   expected_sources  → 預期應該 route 到哪個 source（可多個）
@@ -18,7 +17,6 @@
 '''
 
 import json
-
 
 # 跑 graph
 def run(app, question: str) -> dict:
@@ -35,7 +33,6 @@ def run(app, question: str) -> dict:
         "selected_sources": last_state.get("selected_sources", []),
         "generation":       last_state.get("generation", ""),
     }
-
 
 # --- route 是否正確 ---
 def evaluate_pipeline(app, test_cases: list) -> dict:
