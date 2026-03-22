@@ -69,36 +69,40 @@ useful        not_useful          not_supported
 
 **Structured Router with Confidence Score**
 
-原本用 `bind_tools` 讓 LLM 直接選工具，沒辦法知道它有多確定這個決定。
-改成 `with_structured_output` 後，Router 會輸出三個欄位：`sources`（去哪找）、`confidence`（0–1 的信心分數）、`reasoning`（為什麼這樣選）。
-
-設計了一條 heuristic rule：confidence 低於 0.6 時，不管選了哪個 source，都強制 fallback 到 web search。這讓系統在面對模糊問題時有一個保守但合理的預設行為，不需要依賴模型完全判斷正確。
+當 RAG pipeline 用 `bind_tools` 做 query routing 時，LLM 會直接選接下來回答的工具，但這個做法有一個盲點：你不知道它有多確定這個決定。遇到問題類型比較模糊的時候，它(LLM)可能選了一個 source 但其實沒把握，導致後面撈到的文件完全不相關。
+這邊 `Router` 模組中改成 with_structured_output 後，輸出三個欄位： 1) sources（去哪找）、2) confidence（0–1 的信心分數）、3)reasoning（為什麼這樣選）。當confidence score 低於 threshol 0.6 時，不論目前 LLM 選了什麼工具，設計上都會強制 fallback 到 `web search`。這條 heuristic rule 讓系統對模糊問題有一個保守但可預測的行為，不需要依賴模型每次都判斷正確，也讓 routing 決策變得可解釋、可 debug。
 
 **3-Layer Retrieval**
 
+三層架構的分工是這樣的：
 | Layer | 方法 | 作用 |
 |-------|------|------|
 | 1 | Chroma vector search（cosine similarity） | 快速從大量文件召回候選（k=10） |
 | 2 | Cross-Encoder reranker（BAAI/bge-reranker-base） | 對問題和文件配對打分，重新排序取 top 5 |
-| 3 | LLM-as-Judge（加權評分） | 最終品質把關，過濾不夠相關的文件 |
+| 3 | LLM-as-Judge（加權評分） | 最終品質把關，過濾不夠相關的文件並輸出可解釋的評分和過濾理由 |
 
-Layer 2 用本地小模型跑，不花 API。Layer 3 雖然最貴，但它輸出的評分記錄是建 gold standard dataset 的原始資料，讓評估可以量化。
+目前的設計中，`Layer 1` 負責速度，`Layer 2` 負責精準度，`Layer 3` 負責可解釋性。
+`Layer 2` 用本地模型跑，不花 API，加了這層之後不需要把 k 設很小也能保證最終拿到的文件是相關的。`Layer 3` 除了過濾之外，它輸出的 scores_log 是建立測試集的可參考原始資料，讓評估可以量化，這是單純 binary grader 做不到的。
 
 **Weighted Scoring Rubric**
 
-把 binary grader 換成三個維度的評分，每個維度 1–5 分：
+把 binary grader 換成三個維度的評分，每個維度 1–5 分, 並後續做加權平均：
 
 ```
-factual_relevance      × 0.5   # 文件有沒有直接回答這個問題
+factual_relevance       × 0.5   # 文件有沒有直接回答這個問題
 information_sufficiency × 0.3   # 資訊量夠不夠
-specificity            × 0.2   # 夠不夠具體，不是泛泛而談
+specificity             × 0.2   # 夠不夠具體，不是泛泛而談
 ```
 
-加權分數低於 3.0 的文件會被過濾掉。這個設計的好處是每個維度可以獨立調整，也可以透過分析 scores_log 找出哪個 source 的文件品質比較差。
+若加權分數低於 3.0 的文件會被過濾掉。而這樣設計有兩個具體好處。
+- 第一，它讓過濾決策可解釋：與其說「這份文件被過濾掉了」，你能說「factual_relevance 只有 2 分，文件提到了相關主題但沒有直接回答問題」。
+- 第二，每個維度的權重和 threshold 都是可以調整的參數，好處是每個維度可以獨立調整，也可以透過分析 scores_log 找出哪個 source 的文件品質比較差。
 
 **Config-driven Multi-source**
 
-四個 knowledge source（technical / business / legal / healthcare）透過 `SOURCE_CONFIG` 和 `INDEX_DESCRIPTIONS` 集中管理。要新增一個 source，只需要在這兩個地方加一個 key，Router 的 prompt 會自動更新，不需要動其他程式碼。
+如果不同的 knowledge source（technical / business / legal / healthcare） 的設定和 `Router` 邏輯是耦合在一起的，每次新增一個 source 就要改 prompt、改 routing function、改 vectorstore 初始化，很容易漏改。
+現在的設計做集中管理，把所有 source 的定義集中在 `config.py`(SOURCE_CONFIG（資料在哪裡）和 INDEX_DESCRIPTIONS（這個 source 回答什麼類型的問題）)。新增一個 source 只需要在這兩個 dict 各加一個 key，`Router` 的 prompt 會動態注入 INDEX_DESCRIPTIONS，vectorstore 的建立也是迴圈跑 SOURCE_CONFIG，其他程式碼都不需要動。這讓系統可以在不改架構的情況下擴展到新的 domain。
+
 
 ---
 
