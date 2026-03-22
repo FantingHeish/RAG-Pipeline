@@ -23,21 +23,44 @@ This project extends the baseline in three directions:
 ```
 Query
   ↓
-[Router] structured JSON output + confidence score
-  ├── confidence < 0.6 → web_search  (heuristic fallback)
-  └── confidence ≥ 0.6 → selected source(s)
-              ↓
-  [Layer 1] Vector Search — Chroma, cosine similarity, k=10
-              ↓
-  [Layer 2] Cross-Encoder Reranker — BAAI/bge-reranker-base, top_n=5
-              ↓
-  [Layer 3] LLM-as-Judge — 3-dimension weighted scoring, threshold=3.0
-              ↓
-  [RAG Generate]
-              ↓
-  [Hallucination Check] → [Answer Quality Check] → END
-              ↓                    ↓
-          re-generate          web_search fallback
+┌─────────────────────────────────────────────────────┐
+│ retrieve node                                       │
+│                                                     │
+│  [Router] structured JSON + confidence score        │
+│    ├── confidence < 0.6 → force web_search          │
+│    └── confidence ≥ 0.6 → selected source(s)        │
+│              ↓                      ↓               │
+│    [Layer 1] Vector Search     [Web Search]         │
+│    Chroma cosine similarity,                        │
+│    k=10 (Pointwise)                                 │
+│              ↓                                      │
+│    [Layer 2] Cross-Encoder Reranker                 │
+│    BAAI/bge-reranker-base,                          │
+│    top_n=5 (Pairwise)                               │
+└─────────────────────────────────────────────────────┘
+  ↓
+┌─────────────────────────────────────────────────────┐
+│ retrieval_grade node                                │
+│                                                     │
+│  [Layer 3] LLM-as-Judge                             │
+│  3-dimension weighted scoring, threshold=3.0        │
+│                                                     │
+│    ↓ 有通過的文件        ↓ 全部被過濾掉              │
+└─────────────────────────────────────────────────────┘
+  ↓                             ↓
+[rag_generate]        [web_search_fallback]
+  ↓                             ↓
+  └──────────────────────────── ↓
+                       [retrieval_grade]（重新評分）
+  ↓
+[grade_rag_generation]
+  ↓              ↓                    ↓
+useful        not_useful          not_supported
+  ↓          （答案沒回應問題）    （hallucination）
+ END          web_search_fallback   rag_generate
+                    ↓                   （重新生成）
+            [retrieval_grade]
+
 ```
 
 ---
