@@ -1,35 +1,28 @@
 # config.py
-# 所有設定值集中在這裡，換環境只需改這個檔案
 
 import os
 
 # ============================================================
-# API Keys
+# 1. Setting：
 # ============================================================
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")  # 填入 OpenAI API key
-TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")   # 填入 Tavily API key
 
-# ============================================================
-# Storage
-# ============================================================
+# -- API Keys --
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "") # 填入 OpenAI API key
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "") # 填入 Tavily API key
+
+# -- Storage --
 # Colab 用：PERSIST_DIR = "/drive/MyDrive/chroma_db"
-PERSIST_DIR = "/drive/MyDrive/chroma_db"  # NOTE: 或 PERSIST_DIR = "./chroma_db" (本機暫存)
+PERSIST_DIR = "/drive/MyDrive/chroma_db"  # NOTE: 本機暫存 -> PERSIST_DIR = "./chroma_db"
 
-# ============================================================
-# Retrieval 設定
-# ============================================================
-LAYER1_K            = 10   # Layer 1：每個 source 各撈 k 份候選給 Layer 2 排序
-LAYER2_TOP_N        = 5    # Layer 2：reranker 從 k 份候選裡選出 top_n 份給 Layer 3
-RELEVANCE_THRESHOLD = 3.0  # Layer 3：低於此值過濾 # TOREVIEW
+# -- Retrieval 設定 --
+LAYER1_K            = 10  # Layer 1：每個 source 各撈 k 份候選給 Layer 2 排序
+LAYER2_TOP_N        = 5   # Layer 2：reranker 從 k 份候選裡選出 top_n 份給 Layer 3
+RELEVANCE_THRESHOLD = 3.0 # Layer 3：低於此值過濾 # OPTIMIZE: 目前出現Retrieval兩次後保留的doc都低於threshold狀況, 會先用web_search解決
 
-# ============================================================
-# Router 設定
-# ============================================================
+# -- Router 設定 --
 CONFIDENCE_THRESHOLD = 0.6  # 低於 CONFIDENCE_THRESHOLD → 強制 fallback 到 web_search
 
-# ============================================================
-# Chunking 設定
-# ============================================================
+# -- Chunking 設定 --
 CHUNK_SIZE    = 512
 CHUNK_OVERLAP = 128
 
