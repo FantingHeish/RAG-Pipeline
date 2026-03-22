@@ -13,21 +13,20 @@ from pydantic import BaseModel, Field
 
 from config import RELEVANCE_THRESHOLD
 
-
 # ============================================================
 # Retrieval Grader — 多維度加權評分 (1-5)
 # LLM-as-Judge → Retrieval 的 Layer 3（針對 doc）
 # ============================================================
 '''
-# 改動後：從以下 3 個維度各給 1-5 分，加權成 relevance score：
-#   factual_relevance      × 0.5  （最重要：事實直接相關性）
-#   information_sufficiency × 0.3  （資訊量是否夠）
-#   specificity            × 0.2  （是否具體針對問題）
-# RELEVANCE_THRESHOLD：加權分數低於此值 → 過濾掉
-# 進到這裡的文件已經經過：
+# 從以下 3 個維度各給 1-5 分，加權成 relevance score：
+#   factual_relevance       × 0.5（事實直接相關性）
+#   information_sufficiency × 0.3（資訊量是否夠）
+#   specificity             × 0.2（是否具體針對問題）
+# RELEVANCE_THRESHOLD：加權分數低於此值 -> 過濾
+# 進到Layer3(Retrieval Grader)的文件已經經過：
 #   Layer 1：向量相似度初篩（k=LAYER1_K）
 #   Layer 2：Cross-Encoder reranker 重排序（top_n=LAYER2_TOP_N）
-# 這裡做最終品質把關：三維度加權評分，低於 threshold 過濾掉
+# 這裡做最終品質把關：三維度加權評分，低於 RELEVANCE_THRESHOLD -> 過濾掉
 '''
 
 # --- Retrieval Grader ---
@@ -47,14 +46,12 @@ class DocumentScore(BaseModel):
     )
     reasoning: str = Field(description="簡短說明評分理由")
 
-
-# 加權公式
+# 計算加權
 WEIGHTS = {
     "factual_relevance":       0.5,
     "information_sufficiency": 0.3,
     "specificity":             0.2,
 }
-
 
 def compute_weighted_score(score: DocumentScore) -> float:
     return (
@@ -62,7 +59,6 @@ def compute_weighted_score(score: DocumentScore) -> float:
         score.information_sufficiency * WEIGHTS["information_sufficiency"] +
         score.specificity             * WEIGHTS["specificity"]
     )
-
 
 def build_retrieval_grader():
     grader_prompt = ChatPromptTemplate.from_messages([
