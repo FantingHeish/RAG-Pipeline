@@ -45,7 +45,7 @@ Query
 │  [Layer 3] LLM-as-Judge                             │
 │  3-dimension weighted scoring, threshold=3.0        │
 │                                                     │
-│    ↓ 有通過的文件        ↓ 全部被過濾掉              │
+│    ↓ 有通過的文件        ↓ 全部被過濾掉                 │
 └─────────────────────────────────────────────────────┘
   ↓                             ↓
 [rag_generate]        [web_search_fallback]
