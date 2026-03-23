@@ -1,14 +1,17 @@
 # pipeline.py
 # 負責：GraphState、所有 nodes、conditional edges、build graph、回傳 app
 
-from typing import List
+from typing import List, Optional
 
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain.schema import Document
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_openai.chat_models import ChatOpenAI
 from langgraph.graph import END, StateGraph
 from typing_extensions import TypedDict
 
-from config import CONFIDENCE_THRESHOLD, RELEVANCE_THRESHOLD
+from config import CONFIDENCE_THRESHOLD, RELEVANCE_THRESHOLD, QUERY_REWRITING_ENABLED
 from router import RouteDecision, build_question_router
 from graders import (
     DocumentScore, compute_weighted_score,
@@ -22,13 +25,14 @@ from graders import (
 # ============================================================
 
 class GraphState(TypedDict):
-    question:         str
-    generation:       str
-    documents:        List[str]
-    selected_sources: List[str]   # Router 選了哪些 source
-    route_confidence: float        # Router 信心分數
-    route_reasoning:  str          # Router 理由
-    scores_log:       List[dict]   # 每份文件的三層評分記錄
+    question:          str
+    rewritten_question: Optional[str] # [Query Rewriting] 改寫後的問題，用於 retrieval
+    generation:        str
+    documents:         List[str]
+    selected_sources:  List[str] # Router 選了哪些 source
+    route_confidence:  float # Router 信心分數
+    route_reasoning:   str # Router 理由
+    scores_log:        List[dict] # 每份文件的三層評分記錄
 
 
 # ============================================================
@@ -51,25 +55,62 @@ def build_pipeline(retrievers: dict):
     web_search_tool      = TavilySearchResults()
 
     # ============================================================
+    # [Query Rewriting] 建立 query rewriter chain
+    # ============================================================
+    # 參考：Rewrite-Retrieve-Read, Ma et al., 2023 (arxiv 2305.14283)
+    # 原始問題可能用詞模糊、口語化、或包含對 retrieval 無用的上下文
+    # 改寫後的問題更貼近文件的寫法，讓向量搜尋和 BM25 都能找到更相關的結果
+    _rewrite_prompt = ChatPromptTemplate.from_messages([
+        ("system", (
+            "你是一個搜尋查詢優化專家。"
+            "你的任務是把使用者的問題改寫成更適合在文件資料庫中搜尋的形式。\n\n"
+            "改寫原則：\n"
+            "1. 移除口語化表達，換成更精確的技術用詞\n"
+            "2. 展開縮寫或代名詞，讓問題更完整\n"
+            "3. 保留所有重要的關鍵字和概念\n"
+            "4. 只輸出改寫後的問題，不要任何說明\n\n"
+            "如果問題已經很精確，直接回傳原始問題即可。"
+        )),
+        ("human", "原始問題：{question}\n\n改寫後的問題："),
+    ])
+    _rewrite_llm   = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+    _rewrite_chain = _rewrite_prompt | _rewrite_llm | StrOutputParser()
+
+    # ============================================================
     # Nodes：定義 pipeline 各節點
     # ============================================================
 
     # --- retrieve（由 Router 決定去哪找資料 + 把資料撈回來）---
     def retrieve(state):
         """
-        Router + Layer 1 + Layer 2：
-        1. Router 決定去哪個 source
-        2. ContextualCompressionRetriever.invoke() 自動執行：
-           Layer 1：向量相似度撈 LAYER1_K 份候選
+        [Query Rewriting] → Router → Layer 1（Hybrid Search）→ Layer 2（Reranker）
+
+        流程：
+        1. [新增] 如果 QUERY_REWRITING_ENABLED，先對問題做 LLM 改寫
+           改寫後的問題用於 retrieval；原始問題留著給最終答案生成用
+        2. Router 決定去哪個 source
+        3. ContextualCompressionRetriever.invoke() 自動執行：
+           Layer 1：Hybrid Search（BM25 + 向量搜尋，RRF fusion）
            Layer 2：Cross-Encoder reranker 重排序取 LAYER2_TOP_N 份
         """
-        print("---ROUTE & RETRIEVE (Layer 1 + Layer 2)---")
+        print("---ROUTE & RETRIEVE (Query Rewriting + Layer 1 Hybrid + Layer 2)---")
         question = state["question"]
 
-        decision: RouteDecision = question_router.invoke({"question": question})
-        print(f"  Selected sources : {decision.sources}")  # Router 選擇的資料來源
-        print(f"  Confidence       : {decision.confidence:.2f}")  # Router 信心分數
-        # print(f"  Reasoning      : {decision.reasoning}")  # Router 選擇該資料來源原因 # OPTIMIZE
+        # [Query Rewriting] 改寫問題，讓 retrieval 更準確
+        if QUERY_REWRITING_ENABLED:
+            rewritten = _rewrite_chain.invoke({"question": question})
+            rewritten_question = rewritten.strip()
+            print(f"  Original question  : {question}")
+            print(f"  Rewritten question : {rewritten_question}")
+        else:
+            rewritten_question = question
+            print(f"  Question (no rewrite): {question}")
+
+        # Router 用改寫後的問題做路由決策
+        decision: RouteDecision = question_router.invoke({"question": rewritten_question})
+        print(f"  Selected sources : {decision.sources}") # Router 選擇的資料來源
+        print(f"  Confidence       : {decision.confidence:.2f}") # Router 信心分數
+        # print(f"  Reasoning      : {decision.reasoning}") # Router 選擇該資料來源原因 # OPTIMIZE
 
         # Heuristic fallback：confidence 低於設定標準 → web_search
         selected = decision.sources
@@ -79,11 +120,11 @@ def build_pipeline(retrievers: dict):
 
         all_documents: List[Document] = []
 
-        # confidence 達到標準或以上 → vector retrieval
+        # confidence 達到標準或以上 → vector retrieval（用改寫後的問題搜尋）
         for source in selected:
-            # web search 不經過 retrieval
+            # web search 不經過 retrieval（也用改寫後的問題搜尋）
             if source == "web_search":
-                docs = web_search_tool.invoke({"query": question})
+                docs = web_search_tool.invoke({"query": rewritten_question})
                 web_docs = [
                     Document(
                         page_content=d["content"],
@@ -94,37 +135,39 @@ def build_pipeline(retrievers: dict):
                 all_documents.extend(web_docs)
                 print(f"  -WEB SEARCH: got {len(web_docs)} docs-")
 
-            # 資料透過 retrieval（Layer 1 + Layer 2 自動在這一行完成）
+            # 資料透過 retrieval（Layer 1 Hybrid + Layer 2）
             elif source in retrievers:
-                docs = retrievers[source].invoke(question)
+                docs = retrievers[source].invoke(rewritten_question)
                 for doc in docs:
                     doc.metadata["source"] = source
                 all_documents.extend(docs)
-                print(f"  -{source.upper()}: Layer1+2 done, got {len(docs)} docs-")
+                print(f"  -{source.upper()}: Layer1(Hybrid)+2 done, got {len(docs)} docs-")
 
             else:
                 print(f"  -UNKNOWN SOURCE '{source}', SKIPPED-")
 
         # 整理輸出
+        # 注意：rewritten_question 存進 state，但 rag_generate 用的是原始 question
         return {
-            "documents":        all_documents,
-            "question":         question,
-            "selected_sources": selected,
-            "route_confidence": decision.confidence,
-            "route_reasoning":  decision.reasoning,
-            "scores_log":       [],
+            "documents":          all_documents,
+            "question":           question,           # 原始問題：用於最終答案生成
+            "rewritten_question": rewritten_question, # 改寫問題：記錄用，已用於 retrieval
+            "selected_sources":   selected,
+            "route_confidence":   decision.confidence,
+            "route_reasoning":    decision.reasoning,
+            "scores_log":         [],
         }
 
-    # --- retrieval_grade（幫每份文件打分 → 過濾文件）---
+    # --- retrieval_grade（幫每份文件打分 -> 過濾文件）---
     def retrieval_grade(state):
         """
         Layer 3：LLM-as-Judge 多維度評分。
-        進到這裡的文件已經過 Layer 1（向量相似度）和 Layer 2（Cross-Encoder）。
+        進到這裡的文件已經過 Layer 1（Hybrid Search）和 Layer 2（Cross-Encoder）。
         這裡做最終品質把關，同時把三層分數都記錄進 scores_log。
         """
         print("---[Layer 3] LLM-AS-JUDGE GRADING---")
         documents  = state["documents"]
-        question   = state["question"]
+        question   = state["question"]   # 用原始問題做 grading
         scores_log = state.get("scores_log") or []
 
         filtered_docs = []
@@ -133,6 +176,7 @@ def build_pipeline(retrievers: dict):
             # 取出 Layer 2 的 Cross-Encoder 分數（存在 metadata 裡）
             rerank_score = d.metadata.get("relevance_score", None)
             source       = d.metadata.get("source", "unknown")
+            doc_type     = d.metadata.get("doc_type", "original")
 
             # Layer 3：LLM-as-Judge 打分
             llm_score: DocumentScore = retrieval_grader.invoke({
@@ -146,6 +190,7 @@ def build_pipeline(retrievers: dict):
             scores_log.append({
                 "question":                question,
                 "source":                  source,
+                "doc_type":                doc_type,  # original / raptor_summary
                 "doc_snippet":             d.page_content[:120],
                 "reranker_score":          round(rerank_score, 4) if rerank_score is not None else None,
                 "factual_relevance":       llm_score.factual_relevance,
@@ -156,10 +201,10 @@ def build_pipeline(retrievers: dict):
                 "passed":                  weighted >= RELEVANCE_THRESHOLD,
             })
 
-            print(f"  Source: {source}")  # TODEBUG
+            print(f"  Source: {source} [{doc_type}]")  # TODEBUG
             if rerank_score is not None:
-                print(f"  Reranker score (Layer 2): {rerank_score:.4f}")  # Cross-Encoder 打的分數
-            print(f"  LLM score (Layer 3): {weighted:.2f} "  # retrieval grader 的分數並 breakdown
+                print(f"  Reranker score (Layer 2): {rerank_score:.4f}")
+            print(f"  LLM score (Layer 3): {weighted:.2f} "
                   f"(F:{llm_score.factual_relevance} "
                   f"S:{llm_score.information_sufficiency} "
                   f"Sp:{llm_score.specificity})")
@@ -172,31 +217,32 @@ def build_pipeline(retrievers: dict):
             else:
                 print(f"  -FILTERED-")
 
+        # OPTIMIZE: 如果 Layer 3 全部過濾掉，可在這裡加 hard fallback 避免空回傳
+        # if not filtered_docs:
+        #     filtered_docs = documents[:2] # 例如退而求其次，保留 top 2
+
         return {
             "documents":  filtered_docs,
             "question":   question,
             "scores_log": scores_log,
         }
-    # OPTIMIZE: 做 fallback → 如果 Layer3 全 filter 掉：
-    '''
-    if not filtered_docs:
-        return top_k_docs[:2]  # fallback
-    '''
 
-    # --- web_search_fallback（如果前面全部被 filter 掉 → 則透過 web search）---
+    # --- web_search_fallback（如果前面全部被 filter 掉 -> 則透過web search）---
     def web_search_fallback(state):
         """所有文件被過濾後補做一次 web search"""
         print("---WEB SEARCH FALLBACK---")
-        question  = state["question"]
-        documents = state.get("documents") or []
-        docs      = web_search_tool.invoke({"query": question})
-        web_docs  = [Document(page_content=d["content"]) for d in docs]
+        question   = state["question"]
+        # fallback 用原始問題搜尋，保持與最終答案生成的一致性
+        search_q   = state.get("rewritten_question") or question
+        documents  = state.get("documents") or []
+        docs       = web_search_tool.invoke({"query": search_q})
+        web_docs   = [Document(page_content=d["content"]) for d in docs]
         return {"documents": documents + web_docs, "question": question}
 
-    # --- RAG answer generation（Context + Question → Answer）---
+    # --- RAG answer generation（Context + Question -> Answer）---
     def rag_generate(state):
         print("---GENERATE IN RAG MODE---")
-        question   = state["question"]
+        question   = state["question"]   # 用原始問題生成答案，不用改寫後的問題
         documents  = state["documents"]
         generation = rag_chain.invoke({"documents": documents, "question": question})
         return {"documents": documents, "question": question, "generation": generation}
@@ -220,7 +266,7 @@ def build_pipeline(retrievers: dict):
     # --- retrieval fail → fallback control ---
     def route_retrieval(state):
         print("---ROUTE RETRIEVAL---")
-        # 如果 retrieval grader（Layer 3）把全部文件過濾掉 → fallback to web search
+        # 如果 retrieval grader（Layer 3）把全部文件過濾掉 -> fallback to web search
         if not state["documents"]:
             print("  -ALL DOCS FILTERED, FALLBACK TO WEB SEARCH-")
             return "web_search_fallback"
@@ -252,17 +298,17 @@ def build_pipeline(retrievers: dict):
 
     '''
     retrievel流程
-    retrieve
+    retrieve（Query Rewriting -> Router -> Layer 1 Hybrid -> Layer 2 Reranker）
         v
-    retrieval_grade
+    retrieval_grade（Layer 3 LLM-as-Judge）
         v
     route_retrieval -> web_search_fallback
         v
-    rag_generate
+    rag_generate（用原始問題生成答案）
         v
     grade_rag_generation
         v
-       |-useful -> 結束 
+       |-useful -> 結束
        |- not useful -> 答案沒回應問題 -> web search 再重新生成
        |- hallucination -> 重跑
     '''
@@ -306,7 +352,7 @@ def build_pipeline(retrievers: dict):
         grade_rag_generation,
         {
             "not supported": "rag_generate",        # rag_generate 重新生成
-            "not useful":    "web_search_fallback",  # 重新評分新抓的文件（產生 fallback）
+            "not useful":    "web_search_fallback",  # 答案沒回應問題 → web search 再重新生成
             "useful":        END,
         },
     )
@@ -314,19 +360,21 @@ def build_pipeline(retrievers: dict):
 
     '''
             [retrieve]
+            (Query Rewriting -> Router -> Layer1 Hybrid -> Layer2 Reranker)
                  v
         [retrieval_grade]
+          (Layer 3 LLM-as-Judge)
           v          v
        有文件       沒文件
          v            v
     [rag_generate]  [fallback]
          v            v
          └────→ [retrieval_grade]
-               ↓
+               v
        [grade_rag_generation]
-      ↓           ↓              ↓
+      v           v              v
    useful    not_useful     not_supported
-     ↓       （答案沒回應）  （hallucination）
+     v       （答案沒回應）  （hallucination）
     END       fallback          retry
     '''
 
