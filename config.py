@@ -14,15 +14,51 @@ TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "") # 填入 Tavily API key
 # Colab 用：PERSIST_DIR = "/drive/MyDrive/chroma_db"
 PERSIST_DIR = "/drive/MyDrive/chroma_db"  # NOTE: 本機暫存 -> PERSIST_DIR = "./chroma_db"
 
+# ============================================================
 # -- Retrieval 設定 --
-LAYER1_K            = 10  # Layer 1：每個 source 各撈 k 份候選給 Layer 2 排序
-LAYER2_TOP_N        = 5   # Layer 2：reranker 從 k 份候選裡選出 top_n 份給 Layer 3
-RELEVANCE_THRESHOLD = 3.0 # Layer 3：低於此值過濾 # OPTIMIZE: 目前出現Retrieval兩次後保留的doc都低於threshold狀況, 會先用web_search解決
+# ============================================================
 
+# [Hybrid Search] Layer 1：BM25 + Vector Search，用 RRF 做 score fusion
+# 參考：RRF (Reciprocal Rank Fusion), Cormack et al., SIGIR 2009
+LAYER1_K             = 10   # Vector Search：每個 source 各撈 k 份候選
+LAYER1_BM25_K        = 10   # BM25 Search：每個 source 各撈 k 份候選
+HYBRID_VECTOR_WEIGHT = 0.6  # 向量搜尋的 RRF 權重（1 - 此值 = BM25 權重）
+# 技術文件類 source 建議調低 Vector 權重（專有名詞多，BM25 更準）
+# 語意問題類 source 建議調高 Vector 權重
+
+# Layer 2：Cross-Encoder Reranker
+LAYER2_TOP_N        = 5    # reranker 從候選裡選出 top_n 份給 Layer 3
+
+# Layer 3：LLM-as-Judge
+RELEVANCE_THRESHOLD = 3.0  # 低於此值過濾
+
+# ============================================================
+# -- Query Rewriting 設定 --
+# ============================================================
+# 參考：Rewrite-Retrieve-Read, Ma et al., 2023 (arxiv 2305.14283)
+# 問題進來之前先讓 LLM 改寫成更適合搜尋的形式
+# 改寫後的問題用於 retrieval，原始問題用於最終答案生成
+QUERY_REWRITING_ENABLED = True  # False 可關閉，直接用原始問題做 retrieval
+
+# ============================================================
+# -- RAPTOR 設定 --
+# ============================================================
+# 參考：RAPTOR, Sarthi et al., ICLR 2024 (arxiv 2401.18059)
+# 文件建索引時，遞迴做 cluster → summarize，建立多層摘要
+# 把原始 chunk + 各層摘要都存進 vectorstore（collapsed tree 策略）
+# 讓 retrieval 可以同時撈到細節（原始 chunk）和高層概念（摘要）
+RAPTOR_ENABLED     = True  # False 可關閉，退回一般 chunking
+RAPTOR_N_LEVELS    = 3     # 遞迴摘要的層數（層數越多 API 費用越高）
+RAPTOR_MAX_CLUSTER = 10    # 每一層最多幾個 cluster（控制摘要數量）
+
+# ============================================================
 # -- Router 設定 --
+# ============================================================
 CONFIDENCE_THRESHOLD = 0.6  # 低於 CONFIDENCE_THRESHOLD → 強制 fallback 到 web_search
 
+# ============================================================
 # -- Chunking 設定 --
+# ============================================================
 CHUNK_SIZE    = 512
 CHUNK_OVERLAP = 128
 
