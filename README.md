@@ -68,19 +68,19 @@ useful        not_useful          not_supported
 
 **Structured Router with Confidence Score**
 
-當 RAG pipeline 用 `bind_tools` 做 query routing 時，LLM 會直接選接下來回答的工具，但這個做法有一個盲點：你不知道它有多確定這個決定。遇到問題類型比較模糊的時候，它(LLM)可能選了一個 source 但其實沒把握，導致後面撈到的文件完全不相關。
+當 RAG pipeline 用 `bind_tools` 做 query routing 時，LLM 會直接選接下來回答的工具，但這個做法有一個盲點：我們不知道它有多確定這個決定。遇到問題類型比較模糊的時候，它(LLM)可能選了一個 source 但其實沒把握，導致後面撈到的文件完全不相關。
 這邊 `Router` 模組中改成 with_structured_output 後，輸出三個欄位： 1) sources（去哪找）、2) confidence（0–1 的信心分數）、3)reasoning（為什麼這樣選）。當confidence score 低於 threshol 0.6 時，不論目前 LLM 選了什麼工具，設計上都會強制 fallback 到 `web search`。這條 heuristic rule 讓系統對模糊問題有一個保守但可預測的行為，不需要依賴模型每次都判斷正確，也讓 routing 決策變得可解釋、可 debug。
 
 **3-Layer Retrieval**
 
-三層架構的分工是這樣的：
+三層架構的分工如下：
 | Layer | 方法 | 作用 |
 |-------|------|------|
 | 1 | Chroma vector search（cosine similarity） | 快速從大量文件召回候選（k=10） |
 | 2 | Cross-Encoder reranker（BAAI/bge-reranker-base） | 對問題和文件配對打分，重新排序取 top 5 |
 | 3 | LLM-as-Judge（加權評分） | 最終品質把關，過濾不夠相關的文件並輸出可解釋的評分和過濾理由 |
 
-目前的設計中，`Layer 1` 負責速度，`Layer 2` 負責精準度，`Layer 3` 負責可解釋性。
+目前我們的設計中，`Layer 1` 負責速度，`Layer 2` 負責精準度，`Layer 3` 負責可解釋性。
 `Layer 2` 用本地模型跑，不花 API，加了這層之後不需要把 k 設很小也能保證最終拿到的文件是相關的。`Layer 3` 除了過濾之外，它輸出的 scores_log 是建立測試集的可參考原始資料，讓評估可以量化，這是單純 binary grader 做不到的。
 
 **Weighted Scoring Rubric**
@@ -94,7 +94,7 @@ specificity             × 0.2   # 夠不夠具體，不是泛泛而談
 ```
 
 若加權分數低於 3.0 的文件會被過濾掉。而這樣設計有兩個具體好處。
-- 第一，它讓過濾決策可解釋：與其說「這份文件被過濾掉了」，你能說「factual_relevance 只有 2 分，文件提到了相關主題但沒有直接回答問題」。
+- 第一，它讓過濾決策可解釋：與其說「這份文件被過濾掉了」，能說「factual_relevance 只有 2 分，文件提到了相關主題但沒有直接回答問題」。
 - 第二，每個維度的權重和 threshold 都是可以調整的參數，好處是每個維度可以獨立調整，也可以透過分析 scores_log 找出哪個 source 的文件品質比較差。
 
 **Config-driven Multi-source**
@@ -155,7 +155,7 @@ python main.py
 
 ## Evaluation
 
-用 gold standard dataset 量化改前改後的效果。每筆測試資料包含問題、預期 routing 目標、以及答案中應該出現的關鍵字。
+我們可以設計用 gold standard dataset 量化改前改後的效果。每筆測試資料包含問題、預期 routing 目標、以及答案中應該出現的關鍵字。
 
 跑完評估後用 `print_comparison()` 印出對比：
 
@@ -170,7 +170,7 @@ answer_quality              70.0%       88.2%   ↑  18.2%
 ============================================================
 ```
 
-測試題集不放進版本控制，避免 test set leakage 讓評估結果失去客觀性。
+在此我們未將測試題集上傳，避免 test set leakage 讓評估結果失去客觀性。
 
 ---
 
