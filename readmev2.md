@@ -180,6 +180,7 @@ This pipline includes a evaluation framework as following:
 result example from `print_comparison()` ＋ `evaluate_pipeline()`
 
 ```bash
+</>console
 ============================================================
 EVALUATION COMPARISON: Baseline vs New
 ============================================================
