@@ -153,9 +153,60 @@ The pipeline is modular, configurable, and extensible, allowing developers to pl
 
 ## Integration & Orchestration Layer
 
+## 3. Integration & Orchestration Layer
+
+#### RAG Orchestrator (LangGraph)
+
+The pipeline is orchestrated using **LangGraph**, which enables a stateful and modular execution flow across multiple stages.
+
+Key responsibilities include:
+
+- Managing node-based execution flow across retrieval, grading, and generation  
+- Supporting conditional routing (e.g., fallback to web search)  
+- Enabling retry and regeneration loops based on evaluation results  
+
+Core nodes in the pipeline:
+
+- `retrieve` — query routing and document retrieval  
+- `retrieval_grade` — LLM-based document filtering  
+- `rag_generate` — answer generation using retrieved documents  
+- `web_search_fallback` — external search when retrieval fails  
+- `grade_rag_generation` — answer evaluation and feedback loop  
+
+This design allows the pipeline to function as a **closed-loop system**, rather than a linear RAG flow.
+
+---
+
+### Vector Database
+
+- **Chroma** is used as the primary vector store  
+- Supports:
+  - Multi-collection indexing  
+  - Fast similarity search  
+  - Modular retriever composition  
+
+The vector layer is designed to integrate seamlessly with multi-source retrieval and ranking pipelines.
+
+
 ## Technical Architecture
 
 ## Workflow
+
+1. User query enters system  
+2. Router selects data sources with confidence score  
+3. Retrieval pipeline fetches and reranks documents  
+4. LLM evaluates document quality  
+5. Generate answer using selected documents  
+6. Answer is graded:
+   - Useful → return  
+   - Not useful → fallback  
+   - Not supported → regenerate
+
+This loop ensures:
+- Reduced hallucination
+- Higher answer reliability
+- Self-correcting behavior
+
 
 ## Evaluation
 
