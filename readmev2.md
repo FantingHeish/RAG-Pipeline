@@ -84,6 +84,7 @@ The pipeline is modular, configurable, and extensible, allowing developers to pl
 <summary>Multi-stage Ranking Pipeline</summary>
 
 - 3-layer retrieval architecture:
+
 | Layer   | Method                                                                 | Purpose                     |
 |--------|------------------------------------------------------------------------|-----------------------------|
 | Layer 1 | Vector Search (Chroma, cosine similarity) <br> Pointwise scoring        | Fast candidate retrieval    |
