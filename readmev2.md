@@ -1,4 +1,4 @@
-<img width="468" height="351" alt="image" src="https://github.com/user-attachments/assets/d8621b2f-7cc5-4f49-88d0-2f6463c7ece9" /># RAG Knowledge Pipeline 
+# RAG Knowledge Pipeline 
 A configurable, multi-source Retrieval-Augmented Generation (RAG) pipeline with adaptive query routing, multi-stage retrieval, and LLM-based evaluation. Built with LangChain + LangGraph, this project extends standard RAG systems by introducing structured routing, explainable retrieval scoring, and measurable evaluation, making it suitable for production-oriented and enterprise AI applications. 
 
 ### Navigation
@@ -176,7 +176,8 @@ This pipline includes a evaluation framework as following:
   
   - Routing accuracy
   - Answer quality
-  result from `print_comparison()`example 
+  - example result from `print_comparison()`
+
 ```bash
 ============================================================
 EVALUATION COMPARISON: Baseline vs New
@@ -191,6 +192,9 @@ answer_quality              70.0%       88.2%   ↑  18.2%
 
 <details>
 <summary>Per-case analysis</summary>
+  
+- debug / failure analysis details
+  
 ```bash
 ============================================================
 PER-CASE ANALYSIS
@@ -217,10 +221,12 @@ Route Accuracy  : 66.7%
 Answer Quality  : 66.7%
 ============================================================
 ```
+
 </details>
 
 <details>
 <summary>Scoring signals</summary>
+  
 ```bash
 ============================================================
 SCORING SIGNALS (LLM-as-Judge)
@@ -236,6 +242,7 @@ Threshold: 3.0
 Passed Docs: 2 / 3
 ============================================================
 ```
+
 </details>
 
 
