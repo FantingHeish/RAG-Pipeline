@@ -176,7 +176,8 @@ This pipline includes a evaluation framework as following:
   
   - Routing accuracy
   - Answer quality
-  - example result from `print_comparison()`
+
+result example from `print_comparison()` ＋ `evaluate_pipeline()`
 
 ```bash
 ============================================================
@@ -190,57 +191,26 @@ answer_quality              70.0%       88.2%   ↑  18.2%
 ```
 </details>
 
-<details>
-<summary>Per-case analysis</summary>
-  
-- debug / failure analysis details
-  
-```bash
-============================================================
-PER-CASE ANALYSIS
-============================================================
-Q1: What is Basel III?
-------------------------------------------------------------
-Expected Sources : ['vectorstore']
-Selected Sources : ['web_search']
-Route OK         : ❌
-Answer OK        : ✅
-Generation       : Basel III is a regulatory framework...
-
-Q2: Latest Fed interest rate?
-------------------------------------------------------------
-Expected Sources : ['web_search']
-Selected Sources : ['web_search']
-Route OK         : ✅
-Answer OK        : ✅
-Generation       : The Federal Reserve recently announced...
-
-============================================================
-Summary:
-Route Accuracy  : 66.7%
-Answer Quality  : 66.7%
-============================================================
-```
-
-</details>
 
 <details>
 <summary>Scoring signals</summary>
-  
-```bash
-============================================================
-SCORING SIGNALS (LLM-as-Judge)
-============================================================
-Doc ID   | Factual | Sufficiency | Specificity | Score | Pass
-----------------------------------------------------------------
-doc_1    |    5    |      4      |      4      |  4.5  |  ✅
-doc_2    |    2    |      3      |      2      |  2.4  |  ❌
-doc_3    |    4    |      2      |      3      |  3.1  |  ✅
 
-------------------------------------------------------------
-Threshold: 3.0
-Passed Docs: 2 / 3
-============================================================
+result example of .json from `save_scores_log()`
+
+```bash
+</>JSON
+[
+  {
+    "factual_relevance": 5,
+    "information_sufficiency": 4,
+    "specificity": 4
+  },
+  {
+    "factual_relevance": 2,
+    "information_sufficiency": 3,
+    "specificity": 2
+  }
+]
 ```
 
 </details>
