@@ -153,8 +153,6 @@ The pipeline is modular, configurable, and extensible, allowing developers to pl
 
 ## Integration & Orchestration Layer
 
-## 3. Integration & Orchestration Layer
-
 #### RAG Orchestrator (LangGraph)
 
 The pipeline is orchestrated using **LangGraph**, which enables a stateful and modular execution flow across multiple stages.
@@ -175,9 +173,8 @@ Core nodes in the pipeline:
 
 This design allows the pipeline to function as a **closed-loop system**, rather than a linear RAG flow.
 
----
 
-### Vector Database
+#### Vector Database
 
 - **Chroma** is used as the primary vector store  
 - Supports:
