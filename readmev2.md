@@ -32,7 +32,7 @@ The pipeline is modular, configurable, and extensible, allowing developers to pl
 
 ## Key Features
 
-<details> <summary> #### Multi-source Data Ingestion</summary>
+<details> <summary>Multi-source Data Ingestion</summary>
 
 - Config-driven ingestion across local, web, and extensible sources  
 - Centralized source management for scalable expansion  
@@ -45,7 +45,7 @@ The pipeline is modular, configurable, and extensible, allowing developers to pl
 
 </details>
 
----
+
 
 <details>
 <summary>Adaptive Query Routing</summary>
@@ -63,7 +63,7 @@ The pipeline is modular, configurable, and extensible, allowing developers to pl
 
 </details>
 
----
+
 
 <details>
 <summary>Multi-source Retrieval</summary>
@@ -78,26 +78,25 @@ The pipeline is modular, configurable, and extensible, allowing developers to pl
 
 </details>
 
----
+
 
 <details>
 <summary>Multi-stage Ranking Pipeline</summary>
 
 - 3-layer retrieval architecture:
-  - Layer 1: Vector search (high recall candidate retrieval)  
-  - Layer 2: Cross-Encoder reranker (precision ranking)  
-  - Layer 3: LLM-as-Judge (final quality filtering)  
-- Multi-stage reranking:
-  - pointwise scoring (similarity-based)
-  - pairwise reranking (cross-encoder)
-  - final LLM-based grading  
+| Layer   | Method                                                                 | Purpose                     |
+|--------|------------------------------------------------------------------------|-----------------------------|
+| Layer 1 | Vector Search (Chroma, cosine similarity) <br> Pointwise scoring        | Fast candidate retrieval    |
+| Layer 2 | Cross-Encoder Reranker (BAAI/bge-reranker-base) <br> Pairwise reranking | Precision ranking           |
+| Layer 3 | LLM-as-Judge                                                           | Quality filtering + explainability |
+
 - Each layer optimized for a distinct objective:
   - recall → precision → quality control  
 - Improves ranking accuracy while maintaining scalability  
 
 </details>
 
----
+
 
 <details>
 <summary>Explainable Scoring & Filtering</summary>
@@ -116,7 +115,7 @@ The pipeline is modular, configurable, and extensible, allowing developers to pl
 
 </details>
 
----
+
 
 <details>
 <summary>Evaluation & Optimization</summary>
