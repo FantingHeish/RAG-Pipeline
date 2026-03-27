@@ -38,62 +38,100 @@ These limitations make it difficult to debug failures or improve system performa
 The pipeline is modular, configurable, and extensible, allowing developers to plug in new data sources, retrieval strategies, and evaluation logic.
 
 
-## 2.Key Features
+## 2. Key Features
 ### 2.1 Data Ingestion
-- Config-driven multi-source ingestion 
 <details>
-  
-<summary>- Supports: </summary>
--  Local documents 
--  Web content (via search APIs) 
--  Cloud storage (extensible) 
+<summary>Config-driven multi-source ingestion enabling scalable and extensible data integration.</summary>
+
+- Supports:
+  - Local documents  
+  - Web content (via search APIs)  
+  - Cloud storage (extensible)  
+
+- All sources are centrally defined in `config.py`, allowing new data sources to be added without modifying pipeline logic  
+
+- Improves scalability and maintainability in multi-source environments  
+
 </details>
-All sources are centrally defined in config.py, allowing new data sources to be added without modifying pipeline logic, improving scalability and maintainability.
+
+---
 
 ### 2.2 Search & Retrieval
-🔹 Multi-collection Retrieval
-•	Supports querying across multiple knowledge bases 
-•	Each source is independently indexed and dynamically selected 
-This enables flexible retrieval across domains without hardcoding data sources.
-🔹 Hybrid Retrieval Strategy
+
+<details>
+<summary>Hybrid multi-stage retrieval combining structured routing, dense retrieval, and reranking for accuracy and robustness.</summary>
+
+#### 🔹 Multi-collection Retrieval
+
+- Supports querying across multiple knowledge bases  
+- Each source is independently indexed and dynamically selected  
+
+Enables flexible retrieval across domains without hardcoding data sources.
+
+#### 🔹 Hybrid Retrieval Strategy
+
 Combines structured routing + dense retrieval + external search to handle different query types.
-(1) Structured Router with Confidence Score
-•	Outputs: 
-o	sources 
-o	confidence 
-o	reasoning 
-•	Fallback rule: 
-o	If confidence < 0.6 → force web search 
-This design improves robustness for ambiguous queries while making routing decisions interpretable and debuggable.
-(2) 3-Layer Retrieval Architecture
-Layer	Method	Purpose
-Layer 1	Vector Search (Chroma, cosine similarity)	Fast candidate retrieval
-Layer 2	Cross-Encoder Reranker (BAAI/bge-reranker-base)	Precision ranking
-Layer 3	LLM-as-Judge	Quality filtering + explainability
-This layered design separates concerns:
-•	⚡ Speed (Layer 1) 
-•	🎯 Accuracy (Layer 2) 
-•	🔍 Interpretability (Layer 3) 
-(3) Weighted Scoring Rubric
+
+##### (1) Structured Router with Confidence Score
+
+- Outputs:
+  - `sources`  
+  - `confidence`  
+  - `reasoning`  
+
+- Fallback rule:
+  - If confidence < 0.6 → force web search  
+
+Improves robustness for ambiguous queries and makes routing decisions interpretable.
+
+##### (2) 3-Layer Retrieval Architecture
+
+| Layer | Method | Purpose |
+|------|--------|--------|
+| Layer 1 | Vector Search (Chroma, cosine similarity) | Fast candidate retrieval |
+| Layer 2 | Cross-Encoder Reranker (BAAI/bge-reranker-base) | Precision ranking |
+| Layer 3 | LLM-as-Judge | Quality filtering + explainability |
+
+Separates concerns across:
+- ⚡ Speed  
+- 🎯 Accuracy  
+- 🔍 Interpretability  
+
+
+##### (3) Weighted Scoring Rubric
+
 Replaces binary filtering with multi-dimensional scoring:
-•	factual_relevance (0.5)
-•	information_sufficiency (0.3) 
-•	specificity (0.2) 
+
+- factual_relevance (0.5)  
+- information_sufficiency (0.3)  
+- specificity (0.2)  
+
 Documents below threshold (3.0) are filtered out.
-Benefits:
-•	Explainable filtering decisions 
-•	Tunable scoring system 
-•	Enables deeper evaluation and debugging 
-This enables more granular and explainable filtering compared to binary grading.
-(4) Multi-stage Reranking
-•	Pointwise scoring (vector similarity) 
-•	Pairwise reranking (Cross-Encoder) 
-•	Final LLM-based grading 
-This improves ranking accuracy while maintaining flexibility in retrieval depth.
+
+Enables explainable filtering and structured evaluation signals.
+
+##### (4) Multi-stage Reranking
+
+- Pointwise scoring (vector similarity)  
+- Pairwise reranking (Cross-Encoder)  
+- Final LLM-based grading  
+
+Improves ranking accuracy while maintaining flexibility in retrieval depth.
+
+</details>
+
+
+
 ### 2.3 Reranking & Accuracy Optimization
-•	Cross-Encoder improves semantic matching accuracy 
-•	Allows larger candidate pools without sacrificing precision 
-•	Reduces dependency on strict top-k tuning 
-This design allows the system to balance recall and precision without aggressive parameter tuning.
-<img width="468" height="634" alt="image" src="https://github.com/user-attachments/assets/5588c80d-f60f-4ae3-b381-766fecea1b85" />
+
+<details>
+<summary>Enhances retrieval precision while maintaining high recall without aggressive parameter tuning.</summary>
+
+- Cross-Encoder improves semantic matching accuracy  
+- Allows larger candidate pools without sacrificing precision  
+- Reduces dependency on strict top-k tuning  
+
+Balances recall and precision in a controlled and scalable manner.
+
+</details>
 
