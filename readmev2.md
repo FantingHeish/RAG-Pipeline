@@ -87,8 +87,8 @@ The pipeline is modular, configurable, and extensible, allowing developers to pl
 
 | Layer   | Method                                                                 | Purpose                     |
 |--------|------------------------------------------------------------------------|-----------------------------|
-| Layer 1 | Vector Search (Chroma, cosine similarity) <br> Pointwise scoring        | Fast candidate retrieval    |
-| Layer 2 | Cross-Encoder Reranker (BAAI/bge-reranker-base) <br> Pairwise reranking | Precision ranking           |
+| Layer 1 | Vector Search (Chroma, cosine similarity) <br> / Pointwise scoring        | Fast candidate retrieval    |
+| Layer 2 | Cross-Encoder Reranker (BAAI/bge-reranker-base) <br> / Pairwise reranking | Precision ranking           |
 | Layer 3 | LLM-as-Judge                                                           | Quality filtering + explainability |
 
 - Each layer optimized for a distinct objective:
