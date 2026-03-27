@@ -19,6 +19,8 @@ In many standard RAG implementations, we observed three recurring issues:
 - Lack of evaluation framework — improvements cannot be measured systematically  
 These limitations make it difficult to debug failures or improve system performance in a structured way.
 
+<details> <summary>more details</summary>
+
 > #### Design
 > We designed an adaptive RAG pipeline with following details
 > - Structured query routing with confidence scoring
@@ -26,19 +28,23 @@ These limitations make it difficult to debug failures or improve system performa
 > - LLM-based multi-dimensional scoring instead of binary grading
 > - Gold-standard evaluation pipeline for quantitative comparison
 
-#### Impact
-Enables explainable, robust, and measurable RAG performance across following domains
-- More robust handling of ambiguous queries  
-- Explainable retrieval decisions (not just pass/fail)  
-- Systematic performance improvement via evaluation  
-- Modular architecture that scales across domains  
+> #### Impact
+> Enables explainable, robust, and measurable RAG performance across following domains
+> - More robust handling of ambiguous queries  
+> - Explainable retrieval decisions (not just pass/fail)  
+> - Systematic performance improvement via evaluation  
+> - Modular architecture that scales across domains  
 
-#### Supported use cases
-- Enterprise knowledge assistants (internal documents, policies)  
-- Domain-specific QA systems (finance, healthcare, legal)  
-- Hybrid search systems (internal + external knowledge)  
+> #### Supported use cases
+> - Enterprise knowledge assistants (internal documents, policies)  
+> - Domain-specific QA systems (finance, healthcare, legal)  
+> - Hybrid search systems (internal + external knowledge)  
 
 The pipeline is modular, configurable, and extensible, allowing developers to plug in new data sources, retrieval strategies, and evaluation logic.
+
+</details>
+
+
 
 
 ## Key Features
