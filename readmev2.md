@@ -14,10 +14,12 @@ These limitations make it difficult to debug failures or improve system performa
 <details>
   
 <summary>Designed an adaptive RAG pipeline with structured routing, multi-stage retrieval, and LLM-based evaluation.</summary>
-- Structured query routing with confidence scoring  
-  3-layer retrieval architecture (recall → precision → quality control)  
-  LLM-based multi-dimensional scoring instead of binary grading  
-  Gold-standard evaluation pipeline for quantitative comparison  
+
+- Structured query routing with confidence scoring
+- 3-layer retrieval architecture (recall → precision → quality control)
+- LLM-based multi-dimensional scoring instead of binary grading
+- Gold-standard evaluation pipeline for quantitative comparison
+
 </details>
 
 
