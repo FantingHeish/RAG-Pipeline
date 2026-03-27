@@ -10,36 +10,27 @@ These limitations make it difficult to debug failures or improve system performa
 
 
 ### 1.1 Decision
-
 <details>
 <summary>Designed an adaptive RAG pipeline with structured routing, multi-stage retrieval, and LLM-based evaluation.</summary>
-
 - Structured query routing with confidence scoring
 - 3-layer retrieval architecture (recall → precision → quality control)
 - LLM-based multi-dimensional scoring instead of binary grading
 - Gold-standard evaluation pipeline for quantitative comparison
-
 </details>
 
 
 ### 1.2 Impact
-
 <details>
 <summary>Enables explainable, robust, and measurable RAG performance across domains.<summary>
-
 - More robust handling of ambiguous queries  
 - Explainable retrieval decisions (not just pass/fail)  
 - Systematic performance improvement via evaluation  
 - Modular architecture that scales across domains  
-
 </details>
 
-**Supported use cases:**
+### 1.3 Supported use cases
 - Enterprise knowledge assistants (internal documents, policies)  
 - Domain-specific QA systems (finance, healthcare, legal)  
 - Hybrid search systems (internal + external knowledge)  
-
-
-
 
 The pipeline is modular, configurable, and extensible, allowing developers to plug in new data sources, retrieval strategies, and evaluation logic.
