@@ -39,7 +39,7 @@ The pipeline is modular, configurable, and extensible, allowing developers to pl
 
 
 ## Key Features
-<details> <summary>### Data Ingestion</summary>
+<details> <summary>Data Ingestion</summary>
 
 Config-driven multi-source ingestion enabling scalable and extensible data integration.
 - Supports:
