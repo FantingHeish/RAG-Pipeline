@@ -45,13 +45,15 @@ Config-driven multi-source ingestion enabling scalable and extensible data integ
 
 <details> <summary>Search & Retrieval</summary>
 
-- Multi-collection Retrieval
+<details> <summary>Multi-collection Retrieval</summary>
+  
   - Hybrid multi-stage retrieval combining structured routing, dense retrieval, and reranking for accuracy and robustness. Enables flexible retrieval across domains without hardcoding data sources.
     - Multi-collection Retrieval
     - Supports querying across multiple knowledge bases  
     - Each source is independently indexed and dynamically selected  
+</details>
 
-- Hybrid Retrieval Strategy
+<details> <summary>Hybrid Retrieval Strategy</summary>
   - Combines structured routing + dense retrieval + external search to handle different query types.
     - Structured Router with Confidence Score
       - Outputs:
@@ -98,6 +100,8 @@ Enables explainable filtering and structured evaluation signals.
 - Final LLM-based grading  
 
 Improves ranking accuracy while maintaining flexibility in retrieval depth.
+
+</details>
 
 </details>
 
