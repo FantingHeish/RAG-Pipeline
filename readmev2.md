@@ -1,4 +1,4 @@
-## 1. Overview
+## Overview
 
 In many standard RAG implementations, I observed three recurring issues:
 
@@ -9,7 +9,7 @@ In many standard RAG implementations, I observed three recurring issues:
 These limitations make it difficult to debug failures or improve system performance in a structured way.
 
 
-### 1.1 Decision
+### Decision
 <details>
 <summary>Designed an adaptive RAG pipeline with structured routing, multi-stage retrieval, and LLM-based evaluation.</summary>
 
@@ -20,7 +20,7 @@ These limitations make it difficult to debug failures or improve system performa
 </details>
 
 
-### 1.2 Impact
+### Impact
 <details>
 <summary>Enables explainable, robust, and measurable RAG performance across domains.</summary>
 
@@ -30,7 +30,7 @@ These limitations make it difficult to debug failures or improve system performa
 - Modular architecture that scales across domains  
 </details>
 
-### 1.3 Supported use cases
+### Supported use cases
 - Enterprise knowledge assistants (internal documents, policies)  
 - Domain-specific QA systems (finance, healthcare, legal)  
 - Hybrid search systems (internal + external knowledge)  
@@ -38,18 +38,15 @@ These limitations make it difficult to debug failures or improve system performa
 The pipeline is modular, configurable, and extensible, allowing developers to plug in new data sources, retrieval strategies, and evaluation logic.
 
 
-## 2. Key Features
-### 2.1 Data Ingestion
-<details>
-<summary>Config-driven multi-source ingestion enabling scalable and extensible data integration.</summary>
+## Key Features
+<details> <summary>### Data Ingestion</summary>
 
+Config-driven multi-source ingestion enabling scalable and extensible data integration.
 - Supports:
   - Local documents  
   - Web content (via search APIs)  
   - Cloud storage (extensible)  
-
 - All sources are centrally defined in `config.py`, allowing new data sources to be added without modifying pipeline logic  
-
 - Improves scalability and maintainability in multi-source environments  
 
 </details>
