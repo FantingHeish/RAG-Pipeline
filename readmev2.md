@@ -1,4 +1,4 @@
-# RAG Knowledge Pipeline 
+<img width="468" height="351" alt="image" src="https://github.com/user-attachments/assets/d8621b2f-7cc5-4f49-88d0-2f6463c7ece9" /># RAG Knowledge Pipeline 
 A configurable, multi-source Retrieval-Augmented Generation (RAG) pipeline with adaptive query routing, multi-stage retrieval, and LLM-based evaluation. Built with LangChain + LangGraph, this project extends standard RAG systems by introducing structured routing, explainable retrieval scoring, and measurable evaluation, making it suitable for production-oriented and enterprise AI applications. 
 
 ### Navigation
@@ -18,6 +18,7 @@ In many standard RAG implementations, we observed three recurring issues:
 - Binary retrieval grading — documents are accepted/rejected without clear reasoning  
 - Lack of evaluation framework — improvements cannot be measured systematically  
 These limitations make it difficult to debug failures or improve system performance in a structured way.
+The pipeline is modular, configurable, and extensible, allowing developers to plug in new data sources, retrieval strategies, and evaluation logic.
 
 <details> <summary>more details</summary>
 
@@ -40,11 +41,7 @@ These limitations make it difficult to debug failures or improve system performa
 > - Domain-specific QA systems (finance, healthcare, legal)  
 > - Hybrid search systems (internal + external knowledge)  
 
-The pipeline is modular, configurable, and extensible, allowing developers to plug in new data sources, retrieval strategies, and evaluation logic.
-
 </details>
-
-
 
 
 ## Key Features
@@ -154,11 +151,101 @@ The pipeline is modular, configurable, and extensible, allowing developers to pl
 </details>
 
 
-##  Integration & Orchestration Layer
+## Integration & Orchestration Layer
+
 ## Technical Architecture
+
 ## Workflow
+
 ## Evaluation
+
+Evaluation logs (scores_log) provide Fine-grained scoring insights, Debugging support, and Continuous improvement signals.
+
+This pipline includes a evaluation framework as following: 
+
+<details>
+<summary>Gold standard dataset</summary>
+  
+  - Query
+  - Expected routing
+  - Expected answer signals
+</details>
+  
+<details>
+<summary>Performance Metrics</summary>
+  
+  - Routing accuracy
+  - Answer quality
+  result from `print_comparison()`example 
+```bash
+============================================================
+EVALUATION COMPARISON: Baseline vs New
+============================================================
+Metric                    Baseline        New      Delta
+------------------------------------------------------------
+route_accuracy              65.0%       82.4%   ↑  17.4%
+answer_quality              70.0%       88.2%   ↑  18.2%
+============================================================
+```
+</details>
+
+<details>
+<summary>Per-case analysis</summary>
+```bash
+============================================================
+PER-CASE ANALYSIS
+============================================================
+Q1: What is Basel III?
+------------------------------------------------------------
+Expected Sources : ['vectorstore']
+Selected Sources : ['web_search']
+Route OK         : ❌
+Answer OK        : ✅
+Generation       : Basel III is a regulatory framework...
+
+Q2: Latest Fed interest rate?
+------------------------------------------------------------
+Expected Sources : ['web_search']
+Selected Sources : ['web_search']
+Route OK         : ✅
+Answer OK        : ✅
+Generation       : The Federal Reserve recently announced...
+
+============================================================
+Summary:
+Route Accuracy  : 66.7%
+Answer Quality  : 66.7%
+============================================================
+```
+</details>
+
+<details>
+<summary>Scoring signals</summary>
+```bash
+============================================================
+SCORING SIGNALS (LLM-as-Judge)
+============================================================
+Doc ID   | Factual | Sufficiency | Specificity | Score | Pass
+----------------------------------------------------------------
+doc_1    |    5    |      4      |      4      |  4.5  |  ✅
+doc_2    |    2    |      3      |      2      |  2.4  |  ❌
+doc_3    |    4    |      2      |      3      |  3.1  |  ✅
+
+------------------------------------------------------------
+Threshold: 3.0
+Passed Docs: 2 / 3
+============================================================
+```
+</details>
+
+
 ## Design Highlights(Trade-offs)
+- Replaced traditional tool-based routing with a structured router + confidence scoring, enabling interpretable and controllable routing decisions. 
+- Designed a 3-layer retrieval architecture to decouple recall, ranking, and quality control, instead of relying on a single-stage retriever. 
+- Replaced binary filtering with LLM-based multi-dimensional scoring, allowing explainable document selection and better evaluation signals. 
+- Built a gold-standard evaluation pipeline, enabling quantitative comparison and iterative improvement of the RAG system
+
+
 ## Setup
 #### Install dependencies
 ```bash
