@@ -102,11 +102,9 @@ Improves ranking accuracy while maintaining flexibility in retrieval depth.
 </details>
 
 
+<details> <summary>Reranking & Accuracy Optimization</summary>
 
-### 2.3 Reranking & Accuracy Optimization
-
-<details>
-<summary>Enhances retrieval precision while maintaining high recall without aggressive parameter tuning.</summary>
+Enhances retrieval precision while maintaining high recall without aggressive parameter tuning.
 
 - Cross-Encoder improves semantic matching accuracy  
 - Allows larger candidate pools without sacrificing precision  
