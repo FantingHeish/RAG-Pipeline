@@ -1,6 +1,17 @@
 # RAG Knowledge Pipeline 
 A configurable, multi-source Retrieval-Augmented Generation (RAG) pipeline with adaptive query routing, multi-stage retrieval, and LLM-based evaluation. Built with LangChain + LangGraph, this project extends standard RAG systems by introducing structured routing, explainable retrieval scoring, and measurable evaluation, making it suitable for production-oriented and enterprise AI applications. 
 
+### Navigation
+- [Overview](# Overview)
+- [Key Features](#Key Features)
+- [Integration & Orchestration Layer](# Integration & Orchestration Layer)
+- [Technical Architecture](# Technical Architecture)
+- [Workflow](# Workflow)
+- [Evaluation](# Evaluation)
+- [Design Highlights(Trade-offs)](# Design Highlights(Trade-offs))
+- [Setup](# Setup)
+- [Reference](# Reference)
+
 ## Overview
 In many standard RAG implementations, we observed three recurring issues:
 - Opaque query routing decisions — models select tools/sources without exposing confidence  
@@ -135,3 +146,25 @@ The pipeline is modular, configurable, and extensible, allowing developers to pl
 - Enables iterative improvement and quantitative comparison across pipeline changes  
 
 </details>
+
+
+##  Integration & Orchestration Layer
+## Technical Architecture
+## Workflow
+## Evaluation
+## Design Highlights(Trade-offs)
+## Setup
+#### Install dependencies
+#### Configure environment
+#### Run pipeline
+
+## Reference
+This project is inspired by and extends ideas from:
+- [Adaptive-RAG: Learning to Adapt Retrieval-Augmented Large Language Models through Question Complexity](https://arxiv.org/pdf/2403.14403)
+- [Corrective Retrieval Augmented Generation](https://arxiv.org/pdf/2401.15884)
+- [SELF-RAG: LEARNING TO RETRIEVE, GENERATE, AND CRITIQUE THROUGH SELF-REFLECTION](https://arxiv.org/pdf/2310.11511)
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/pdf/2005.11401)
+- [RAPTOR: RECURSIVE ABSTRACTIVE PROCESSING FOR TREE-ORGANIZED RETRIEVAL](https://arxiv.org/pdf/2401.18059)
+
+
+
