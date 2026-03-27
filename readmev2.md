@@ -19,12 +19,12 @@ In many standard RAG implementations, we observed three recurring issues:
 - Lack of evaluation framework — improvements cannot be measured systematically  
 These limitations make it difficult to debug failures or improve system performance in a structured way.
 
-#### Design
-We designed an adaptive RAG pipeline with following details
-- Structured query routing with confidence scoring
-- 3-layer retrieval architecture (recall → precision → quality control)
-- LLM-based multi-dimensional scoring instead of binary grading
-- Gold-standard evaluation pipeline for quantitative comparison
+> #### Design
+> We designed an adaptive RAG pipeline with following details
+> - Structured query routing with confidence scoring
+> - 3-layer retrieval architecture (recall → precision → quality control)
+> - LLM-based multi-dimensional scoring instead of binary grading
+> - Gold-standard evaluation pipeline for quantitative comparison
 
 #### Impact
 Enables explainable, robust, and measurable RAG performance across following domains
@@ -155,8 +155,28 @@ The pipeline is modular, configurable, and extensible, allowing developers to pl
 ## Design Highlights(Trade-offs)
 ## Setup
 #### Install dependencies
+```bash
+pip install langchain langchain-openai chromadb langgraph \
+            pypdf langchain_community pydantic gdown \
+            requests beautifulsoup4 sentence-transformers
+
+```
 #### Configure environment
+```bash
+# config.py
+OPENAI_API_KEY = "your-key"
+TAVILY_API_KEY = "your-key"
+
+SOURCE_CONFIG = {
+    "healthcare": {
+        "local_folder": "/path/to/docs"
+    }
+}
+```
 #### Run pipeline
+```bash
+python main.py
+```
 
 ## Reference
 This project is inspired by and extends ideas from:
