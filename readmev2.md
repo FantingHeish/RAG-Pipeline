@@ -2,15 +2,15 @@
 A configurable, multi-source Retrieval-Augmented Generation (RAG) pipeline with adaptive query routing, multi-stage retrieval, and LLM-based evaluation. Built with LangChain + LangGraph, this project extends standard RAG systems by introducing structured routing, explainable retrieval scoring, and measurable evaluation, making it suitable for production-oriented and enterprise AI applications. 
 
 ### Navigation
-- [Overview](# Overview)
-- [Key Features](#Key Features)
-- [Integration & Orchestration Layer](# Integration & Orchestration Layer)
-- [Technical Architecture](# Technical Architecture)
-- [Workflow](# Workflow)
-- [Evaluation](# Evaluation)
-- [Design Highlights(Trade-offs)](# Design Highlights(Trade-offs))
-- [Setup](# Setup)
-- [Reference](# Reference)
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Integration & Orchestration Layer](#integration--orchestration-layer)
+- [Technical Architecture](#technical-architecture)
+- [Workflow](#workflow)
+- [Evaluation](#evaluation)
+- [Design Highlights (Trade-offs)](#design-highlights-trade-offs)
+- [Setup](#setup)
+- [Reference](#reference)
 
 ## Overview
 In many standard RAG implementations, we observed three recurring issues:
