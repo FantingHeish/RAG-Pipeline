@@ -40,12 +40,13 @@ The pipeline is modular, configurable, and extensible, allowing developers to pl
 
 ## 2.Key Features
 ### 2.1 Data Ingestion
-•	Config-driven multi-source ingestion 
+- Config-driven multi-source ingestion 
 <details>
-  <summary>•	Supports: </summary>
-o	Local documents 
-o	Web content (via search APIs) 
-o	Cloud storage (extensible) 
+  
+<summary>- Supports: </summary>
+-  Local documents 
+-  Web content (via search APIs) 
+-  Cloud storage (extensible) 
 </details>
 All sources are centrally defined in config.py, allowing new data sources to be added without modifying pipeline logic, improving scalability and maintainability.
 
