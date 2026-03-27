@@ -8,11 +8,10 @@ In many standard RAG implementations, I observed three recurring issues:
 
 These limitations make it difficult to debug failures or improve system performance in a structured way.
 
----
 
 ### 1.1 Decision
 
-**Designed an adaptive RAG pipeline with structured routing, multi-stage retrieval, and LLM-based evaluation.**
+Designed an adaptive RAG pipeline with structured routing, multi-stage retrieval, and LLM-based evaluation.
 
 <details>
 <summary>See design details</summary>
@@ -24,11 +23,10 @@ These limitations make it difficult to debug failures or improve system performa
 
 </details>
 
----
 
 ### 1.2 Impact
 
-**Enables explainable, robust, and measurable RAG performance across domains.**
+Enables explainable, robust, and measurable RAG performance across domains.
 
 <details>
 <summary>See impact details</summary>
@@ -45,6 +43,5 @@ These limitations make it difficult to debug failures or improve system performa
 
 </details>
 
----
 
 The pipeline is modular, configurable, and extensible, allowing developers to plug in new data sources, retrieval strategies, and evaluation logic.
