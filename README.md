@@ -302,7 +302,7 @@ python main.py
 
 ## Reference
 This project is inspired by and extends ideas from:
--[NVIDIA RAG Blueprint](https://github.com/NVIDIA-AI-Blueprints/rag/blob/main/README.md)
+- [NVIDIA RAG Blueprint](https://github.com/NVIDIA-AI-Blueprints/rag/blob/main/README.md)
 - [Adaptive-RAG: Learning to Adapt Retrieval-Augmented Large Language Models through Question Complexity](https://arxiv.org/pdf/2403.14403)
 - [Corrective Retrieval Augmented Generation](https://arxiv.org/pdf/2401.15884)
 - [SELF-RAG: LEARNING TO RETRIEVE, GENERATE, AND CRITIQUE THROUGH SELF-REFLECTION](https://arxiv.org/pdf/2310.11511)
