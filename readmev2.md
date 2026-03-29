@@ -187,12 +187,8 @@ The vector layer is designed to integrate seamlessly with multi-source retrieval
 
 ## Technical Architecture
 
-```bash
-
 <img width="547" height="611" alt="Screenshot 2026-03-29 at 02 18 05" src="https://github.com/user-attachments/assets/347c39b0-30f6-496c-8cb4-7aa0873bb4d4" />
 
-
-```
 
 ## Workflow
 
