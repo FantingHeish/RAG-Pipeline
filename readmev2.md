@@ -187,67 +187,11 @@ The vector layer is designed to integrate seamlessly with multi-source retrieval
 
 ## Technical Architecture
 
-## 4. Technical Architecture
+```bash
 
-```mermaid
-flowchart TD
+<img width="547" height="611" alt="Screenshot 2026-03-29 at 02 18 05" src="https://github.com/user-attachments/assets/347c39b0-30f6-496c-8cb4-7aa0873bb4d4" />
 
-%% =========================
-%% User Input Layer
-%% =========================
-A[User Query]
 
-%% =========================
-%% Routing Layer
-%% =========================
-A --> B[Structured Router<br/>confidence + reasoning]
-
-B -->|low confidence| C[Web Search API]
-B -->|high confidence| D[Vector Retrieval]
-
-%% =========================
-%% Retrieval Layer
-%% =========================
-D --> E[Layer 1: Vector Search<br/>(Chroma, similarity)]
-E --> F[Layer 2: Cross-Encoder Reranker]
-F --> G[Layer 3: LLM-as-Judge<br/>(scoring + filtering)]
-
-%% =========================
-%% Filtering Decision
-%% =========================
-G -->|pass| H[RAG Generation]
-G -->|fail| C
-
-%% =========================
-%% External Retrieval
-%% =========================
-C --> H
-
-%% =========================
-%% Generation Layer
-%% =========================
-H --> I[LLM Response]
-
-%% =========================
-%% Evaluation Layer
-%% =========================
-I --> J[Answer Evaluation<br/>(hallucination / relevance)]
-
-J -->|useful| K[Final Answer]
-J -->|not useful| C
-J -->|not supported| H
-
-%% =========================
-%% Feedback Loop
-%% =========================
-C --> D
-H --> J
-
-%% =========================
-%% Logging / Evaluation
-%% =========================
-G --> L[scores_log]
-J --> M[evaluation metrics]
 ```
 
 ## Workflow
