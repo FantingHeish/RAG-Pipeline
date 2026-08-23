@@ -1,5 +1,6 @@
 # RAG Knowledge Pipeline 
 A configurable, multi-source Retrieval-Augmented Generation (RAG) pipeline with adaptive query routing, multi-stage retrieval, and LLM-based evaluation. Built with LangChain + LangGraph, this project extends standard RAG systems by introducing structured routing, explainable retrieval scoring, and measurable evaluation, making it suitable for production-oriented and enterprise AI applications. 
+<img width="1306" height="689" alt="Screenshot 2026-08-23 at 01 30 27" src="https://github.com/user-attachments/assets/a1a2b0f5-4e83-4ef8-8f78-f18ffcfd040b" />
 
 ### Navigation
 - [Overview](#overview)
