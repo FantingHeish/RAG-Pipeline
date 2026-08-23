@@ -1,16 +1,11 @@
 # router.py
 # 負責：Router structured JSON output + confidence score + heuristic fallback
-
-# ============================================================
-# Router — structured JSON & confidence（對進來的 query 做路由）
-# ============================================================
-'''
-# with_structured_output → RouteDecision 輸出對 query 的路由決策：
-#   sources    : 選了哪些 data source（支援多選，例：technical + healthcare）
-#   confidence : 信心分數 0.0–1.0
-#   reasoning  : 為什麼這樣選
-# Heuristic rule：confidence < CONFIDENCE_THRESHOLD → 強制 fallback 到 web_search
-'''
+# 這支檔案邏輯沒有變動（原本設計沒問題），只搬過來保持專案完整可跑。
+#
+# 目前沒有任何地方 import 這支檔案（見 README「拿掉 Router」）。
+# 注意：如果之後要拿回來用，CONFIDENCE_THRESHOLD 和 INDEX_DESCRIPTIONS 這兩個
+# 設定值在目前的 config.py 裡已經不存在了，需要先補回去，否則 import 這支檔案會直接 NameError/AttributeError。
+# OPTIMIZE/ 拿回來用之前，順便把 model 從 gpt-3.5-turbo 評估要不要換成更新的模型
 
 from typing import List
 
@@ -20,9 +15,8 @@ from pydantic import BaseModel, Field
 
 from config import CONFIDENCE_THRESHOLD, INDEX_DESCRIPTIONS
 
-
+# Router 輸出
 class RouteDecision(BaseModel):
-    """Router 的結構化輸出"""
     sources: List[str] = Field(
         description=(
             "選擇的資料來源，可以是多個。"
@@ -34,7 +28,7 @@ class RouteDecision(BaseModel):
         description="對這個路由決策的信心分數，0.0 到 1.0 之間"
     )
     reasoning: str = Field(
-        description="為什麼選這些 source，一句話說明"  # TODO
+        description="為什麼選這些 source，一句話說明"
     )
 
 
@@ -67,5 +61,5 @@ confidence 反映你對這個分類的確定程度：
 
 def build_question_router():
     """建立並回傳 question_router chain"""
-    llm_router = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)  # TODO: model: gpt-3.5-turbo?
+    llm_router = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
     return build_router_prompt() | llm_router.with_structured_output(RouteDecision)

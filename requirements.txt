@@ -1,0 +1,40 @@
+# 版本有釘住區間：這份程式碼用的是 langchain 0.3.x 系列 API
+# （例如 `from langchain.schema import Document`、`langchain.retrievers.EnsembleRetriever`）。
+# 不釘版本的話 pip 會抓到 langchain 1.x，其中 langchain.schema / langchain.retrievers 等
+# 模組路徑已經搬家或移除，程式會直接 import 失敗。
+# OPTIMIZE/ 之後有空的話可以評估把整包 migrate 到 langchain 1.x 的新 API
+langchain>=0.3,<0.4
+langchain-openai>=0.2,<0.3
+langchain-community>=0.3,<0.4
+langchain-core>=0.3,<0.4
+langgraph>=0.2,<0.3
+chromadb
+pydantic
+typing_extensions
+numpy
+scikit-learn
+rank_bm25
+sentence-transformers
+pypdf
+requests
+gdown
+beautifulsoup4
+
+# .env 讀取 API key 用
+python-dotenv
+
+# 前端介面
+streamlit
+
+# 讀取 Word (.docx) 檔用
+docx2txt
+
+# 圖片匯入用（CLIP embedding 需要開圖；caption 走 gpt-4o-mini 之類的視覺模型，不需要額外套件）
+pillow
+
+# web_search fallback 用（這次 demo 需要，請務必安裝並設定 TAVILY_API_KEY）
+tavily-python
+
+# RAGAS 離線評估用（這次 demo 需要）
+ragas
+datasets
